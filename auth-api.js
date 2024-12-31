@@ -19,7 +19,7 @@ function ensureAuthenticated(req, res, next) {
 // Configuración de CORS
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN_NEW.split(','), // Soporta múltiples URLs
+    origin: 'https://hidroxcajaherramientas.netlify.app', // Soporta múltiples URLs
     credentials: true,
   })
 );
