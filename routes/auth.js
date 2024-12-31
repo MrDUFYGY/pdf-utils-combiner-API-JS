@@ -48,7 +48,7 @@ router.get(
     if (req.headers['content-type'] === 'application/json') {
       return res.json({ message: 'Autenticación exitosa', user: req.user });
     }
-    res.redirect('https://page-pdf-utils.netlify.app/dashboard'); // Redirige al frontend
+    res.redirect('https://hidroxcajaherramientas.netlify.app/dashboard'); // Redirige al frontend
   }
 );
 
@@ -65,7 +65,7 @@ router.get('/logout', (req, res) => {
     if (req.headers['content-type'] === 'application/json') {
       return res.json({ message: 'Cierre de sesión exitoso' });
     }
-    res.redirect('https://page-pdf-utils.netlify.app/index');
+    res.redirect('https://hidroxcajaherramientas.netlify.app/index');
   });
 });
 
