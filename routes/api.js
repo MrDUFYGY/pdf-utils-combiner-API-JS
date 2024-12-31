@@ -6,8 +6,11 @@ const path = require('path');
 
 const router = express.Router();
 
-// Configuración de Multer para subir archivos
-const upload = multer({ dest: 'uploads/' });
+// Configuración de Multer para usar la carpeta temporal
+const upload = multer({
+  dest: '/tmp/', // Carpeta temporal
+  limits: { fileSize: 10 * 1024 * 1024 }, // Límite de 10 MB por archivo
+});
 
 // Ruta para subir y combinar archivos
 router.post('/upload', upload.array('files', 50), async (req, res) => {
@@ -18,8 +21,11 @@ router.post('/upload', upload.array('files', 50), async (req, res) => {
       return res.status(400).send('Debes subir al menos 2 archivos.');
     }
 
+    console.log('Archivos recibidos:', files);
+
     // Crear un PDF combinado
     const combinedPdf = await PDFDocument.create();
+
     for (const file of files) {
       const pdfBytes = fs.readFileSync(file.path);
       const pdf = await PDFDocument.load(pdfBytes);
@@ -29,12 +35,17 @@ router.post('/upload', upload.array('files', 50), async (req, res) => {
     }
 
     const combinedPdfBytes = await combinedPdf.save();
-    const outputPath = path.join(__dirname, '../uploads/combined.pdf');
+
+    // Guardar el PDF combinado en la carpeta temporal
+    const outputPath = path.join('/tmp/', 'combined.pdf');
     fs.writeFileSync(outputPath, combinedPdfBytes);
+
+    console.log('PDF combinado creado en:', outputPath);
 
     // Descargar el archivo combinado
     res.download(outputPath, 'combined.pdf', () => {
-      fs.unlinkSync(outputPath); // Eliminar el PDF combinado
+      fs.unlinkSync(outputPath); // Eliminar el PDF combinado después de descargar
+      console.log('Archivo combinado eliminado:', outputPath);
     });
   } catch (error) {
     console.error('Error al combinar los archivos:', error);

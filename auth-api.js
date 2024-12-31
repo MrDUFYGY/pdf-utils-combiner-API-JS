@@ -28,6 +28,8 @@ app.use(cors({ origin: '*', credentials: true }));
 
 
 
+
+
 // Configuración de sesiones
 app.use(
   session({
