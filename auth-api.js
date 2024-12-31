@@ -19,7 +19,7 @@ function ensureAuthenticated(req, res, next) {
 // Configuración de CORS
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN.split(','), // Soporta múltiples URLs
+    origin: process.env.CORS_ORIGIN_NEW.split(','), // Soporta múltiples URLs
     credentials: true,
   })
 );
