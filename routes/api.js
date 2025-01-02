@@ -14,6 +14,7 @@ const upload = multer({
 
 // Ruta para subir y combinar archivos
 router.post('/upload', upload.array('files', 50), async (req, res) => {
+  const outputPath = path.join('/tmp/', 'combined.pdf');
   try {
     const files = req.files;
 
@@ -31,26 +32,33 @@ router.post('/upload', upload.array('files', 50), async (req, res) => {
       const pdf = await PDFDocument.load(pdfBytes);
       const pages = await combinedPdf.copyPages(pdf, pdf.getPageIndices());
       pages.forEach((page) => combinedPdf.addPage(page));
-      fs.unlinkSync(file.path); // Eliminar archivo temporal
+      fs.unlinkSync(file.path); // Eliminar archivo temporal después de procesar
     }
 
     const combinedPdfBytes = await combinedPdf.save();
 
     // Guardar el PDF combinado en la carpeta temporal
-    const outputPath = path.join('/tmp/', 'combined.pdf');
     fs.writeFileSync(outputPath, combinedPdfBytes);
 
     console.log('PDF combinado creado en:', outputPath);
 
     // Descargar el archivo combinado
-    res.download(outputPath, 'combined.pdf', () => {
-      fs.unlinkSync(outputPath); // Eliminar el PDF combinado después de descargar
+    res.download(outputPath, 'combined.pdf', (err) => {
+      if (err) {
+        console.error('Error durante la descarga:', err);
+      }
+      fs.unlinkSync(outputPath); // Eliminar el archivo combinado después de descargar
       console.log('Archivo combinado eliminado:', outputPath);
     });
   } catch (error) {
     console.error('Error al combinar los archivos:', error);
+    // Eliminar archivo combinado si algo salió mal
+    if (fs.existsSync(outputPath)) {
+      fs.unlinkSync(outputPath);
+    }
     res.status(500).send('Error al combinar los archivos.');
   }
 });
+
 
 module.exports = router;
