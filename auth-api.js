@@ -16,18 +16,27 @@ function ensureAuthenticated(req, res, next) {
   res.status(401).json({ error: 'No autorizado. Inicia sesión primero.' });
 }
 
-// Configuración de CORS
+// // Configuración de CORS
 // app.use(
 //   cors({
-//     origin: 'https://hidroxcajaherramientas.netlify.app', // Soporta múltiples URLs
+//     origin: process.env.CORS_ORIGIN.split(','), // Soporta múltiples URLs
 //     credentials: true,
 //   })
 // );
 
-app.use(cors({ origin: '*', credentials: true }));
 
+// Configuración de CORS
+app.use(
+  cors({
+    origin: 'https://hidroxcajaherramientas.netlify.app', // Dominio permitido
+    credentials: true, // Permitir cookies y encabezados de autenticación
+  })
+);
 
-
+// Prueba de ruta para verificar CORS
+app.get('/test', (req, res) => {
+  res.json({ message: 'CORS configurado correctamente' });
+});
 
 
 // Configuración de sesiones
