@@ -16,22 +16,26 @@ function ensureAuthenticated(req, res, next) {
   res.status(401).json({ error: 'No autorizado. Inicia sesión primero.' });
 }
 
-// // Configuración de CORS
-// app.use(
-//   cors({
-//     origin: process.env.CORS_ORIGIN.split(','), // Soporta múltiples URLs
-//     credentials: true,
-//   })
-// );
+// Configuración de CORS con soporte para múltiples dominios o un dominio fijo.
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN_NEW.split(',')
+  : ['https://hidroxcajaherramientas.netlify.app']; // Fallback a dominio fijo
 
-
-// Configuración de CORS
 app.use(
   cors({
-    origin: 'https://hidroxcajaherramientas.netlify.app', // Dominio permitido
+    origin: (origin, callback) => {
+      // Permitir solicitudes desde Postman (sin origen) o dominios permitidos
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.error(`CORS bloqueado para el origen: ${origin}`);
+        callback(new Error('No autorizado por CORS'));
+      }
+    },
     credentials: true, // Permitir cookies y encabezados de autenticación
   })
 );
+
 
 // Prueba de ruta para verificar CORS
 app.get('/test', (req, res) => {
@@ -61,9 +65,15 @@ app.use('/api', apiRoutes);
 
 // Middleware global para manejar errores
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Algo salió mal en el servidor.' });
+  console.error('Error en el servidor:', err.stack);
+
+  const isProduction = process.env.NODE_ENV === 'production';
+  res.status(500).json({
+    error: 'Algo salió mal en el servidor.',
+    details: isProduction ? undefined : err.message, // Mostrar detalles solo en desarrollo
+  });
 });
+
 
 // Puerto de escucha
 const PORT = process.env.PORT || 5000;
